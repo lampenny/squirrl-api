@@ -1,0 +1,12 @@
+{
+  "name": "squirrl-api",
+  "version": "1.0.0",
+  "repository": "lampenny/squirrl-api",
+  "description": "squirrl backend",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
