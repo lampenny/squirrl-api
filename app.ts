@@ -9,8 +9,8 @@ const authRouter = require("./routes/auth");
 
 app.use(cors());
 app.use(express.json());
-app.use("/", userRouter);
-app.use("/", authRouter);
+app.use("/users", userRouter);
+app.use("/auth", authRouter);
 
 app.listen(PORT || 4000, () => {
   console.log(`its working on port ${PORT || 4000}`);

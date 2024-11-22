@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 // GET all /users
-router.get("/users", async (_req: Request, res: Response) => {
+router.get("/all", async (_req: Request, res: Response) => {
   const client = await pool.connect();
 
   try {
@@ -27,7 +27,7 @@ router.get("/users", async (_req: Request, res: Response) => {
 });
 
 // GET user by id
-router.get("/users/:id", async (req: Request, res: Response) => {
+router.get("/:id", async (req: Request, res: Response) => {
   const userId = req.params.id;
   const client = await pool.connect();
 
