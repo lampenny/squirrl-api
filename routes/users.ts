@@ -18,7 +18,7 @@ router.get("/all", async (_req: Request, res: Response) => {
   try {
     const query = "SELECT * FROM users";
     const result = await client.query(query);
-    client.release();
+
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -35,7 +35,6 @@ router.get("/:id", async (req: Request, res: Response) => {
     const result = await client.query("SELECT * FROM users WHERE id = $1", [
       userId,
     ]);
-    client.release();
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "User not found" });

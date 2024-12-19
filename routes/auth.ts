@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 
 const express = require("express");
-const router = express.Router();
-const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
+const { Pool } = require("pg");
 
+const router = express.Router();
 const pool = new Pool({
   host: process.env.DATABASE_HOST,
   database: process.env.DATABASE,
@@ -19,8 +19,6 @@ router.post("/login", async (req: Request, res: Response) => {
     const query = "SELECT * FROM auth WHERE email = $1";
     const result = await client.query(query, [email]);
 
-    client.release();
-
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -33,10 +31,12 @@ router.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    res.json({ message: "Login successful", email: email });
+    res.status(200).json({
+      message: "Login successful",
+      email: email,
+    });
   } catch (err) {
-    console.error("Error during login:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: err });
   }
 });
 
@@ -60,15 +60,18 @@ router.post("/register", async (req: Request, res: Response) => {
       "INSERT INTO auth (user_id, password_hash, email) VALUES ($1, $2, $3)";
     await client.query(insertAuthQuery, [userId, hashedPassword, email]);
 
-    await client.query("COMMIT");
+    const insertFinanceQuery = `
+    INSERT INTO overview (user_id, income, expenses, investments, credit_card_balance, pension)
+    VALUES ($1, 0, 0, 0, 0, 0);`;
 
-    client.release();
+    await client.query(insertFinanceQuery, [userId]);
+
+    await client.query("COMMIT");
 
     res.status(201).json({ message: "Registered successfully" });
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("Error registering user:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Error registering user", error: err });
   }
 });
 
