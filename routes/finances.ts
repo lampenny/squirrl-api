@@ -10,6 +10,21 @@ const pool = new Pool({
   port: process.env.DATABASE_PORT,
 });
 
+router.get("/:id", async (req: Request, res: Response) => {
+  const financesId = req.params.id;
+  const client = await pool.connect();
+
+  try {
+    const result = await client.query("SELECT * FROM finances WHERE id = $1", [
+      financesId,
+    ]);
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+});
+
 router.post("/edit", async (req: Request, res: Response) => {
   const { id, income, expenses, investments, credit_card_balance, pension } =
     req.body;

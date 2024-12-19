@@ -11,7 +11,6 @@ const pool = new Pool({
   port: process.env.DATABASE_PORT,
 });
 
-// GET all /users
 router.get("/all", async (_req: Request, res: Response) => {
   const client = await pool.connect();
 
@@ -26,7 +25,6 @@ router.get("/all", async (_req: Request, res: Response) => {
   }
 });
 
-// GET user by id
 router.get("/:id", async (req: Request, res: Response) => {
   const userId = req.params.id;
   const client = await pool.connect();
@@ -42,8 +40,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ message: "Server error", error: err });
   }
 });
 
