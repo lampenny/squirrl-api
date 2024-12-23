@@ -10,14 +10,15 @@ const pool = new Pool({
   port: process.env.DATABASE_PORT,
 });
 
-router.get("/:id", async (req: Request, res: Response) => {
-  const financesId = req.params.id;
+router.get("/:user_id", async (req: Request, res: Response) => {
+  const id = req.params.user_id;
   const client = await pool.connect();
 
   try {
-    const result = await client.query("SELECT * FROM finances WHERE id = $1", [
-      financesId,
-    ]);
+    const result = await client.query(
+      "SELECT * FROM finances WHERE user_id = $1",
+      [id]
+    );
 
     res.json(result.rows[0]);
   } catch (err) {

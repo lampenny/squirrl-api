@@ -30,10 +30,13 @@ router.post("/login", async (req: Request, res: Response) => {
     if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
+    // Remove sensitive fields before returning the user object
+    const { password_hash, ...safeUser } = user;
 
+    // Send the response with the sanitized user object
     res.status(200).json({
       message: "Login successful",
-      email: email,
+      user: safeUser,
     });
   } catch (err) {
     res.status(500).json({ error: err });
