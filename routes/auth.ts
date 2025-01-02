@@ -64,7 +64,7 @@ router.post("/register", async (req: Request, res: Response) => {
     await client.query(insertAuthQuery, [userId, hashedPassword, email]);
 
     const insertFinanceQuery = `
-    INSERT INTO overview (user_id, income, expenses, investments, credit_card_balance, pension)
+    INSERT INTO finances (user_id, income, expenses, investments, credit_card_balance, pension)
     VALUES ($1, 0, 0, 0, 0, 0);`;
 
     await client.query(insertFinanceQuery, [userId]);
