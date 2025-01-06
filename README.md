@@ -24,4 +24,4 @@ Then in the terminal run:
 $ createdb squirrl
 ```
 
-Ensure PostgreSQL is installed
+Ensure PostgreSQL is installed.
