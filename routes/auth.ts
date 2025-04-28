@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+import * as session from "express-session";
 
 const express = require("express");
 const bcrypt = require("bcrypt");
@@ -11,10 +12,35 @@ const pool = new Pool({
   port: process.env.DATABASE_PORT,
 });
 
-router.post("/login", async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+declare module "express-session" {
+  interface SessionData {
+    userId: string | null;
+  }
+}
 
+interface AuthenticatedRequest extends Request {
+  session: session.Session &
+    Partial<session.SessionData> & { user: string | null };
+}
+
+function isAuthenticated(
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+) {
+  if (req.session.user) {
+    next();
+  } else {
+    next("route");
+  }
+}
+
+router.get("/auth/session", isAuthenticated);
+
+router.post("/login", async (req: AuthenticatedRequest, res: Response) => {
+  const { email, password } = req.body;
   const client = await pool.connect();
+
   try {
     const query = "SELECT * FROM auth WHERE email = $1";
     const result = await client.query(query, [email]);
@@ -24,24 +50,38 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     const user = result.rows[0];
-
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-    // Remove sensitive fields before returning the user object
+
+    req.session.userId = user.user_id;
+
     const { password_hash, ...safeUser } = user;
 
-    // Send the response with the sanitized user object
     res.status(200).json({
       message: "Login successful",
       user: safeUser,
     });
   } catch (err) {
-    res.status(500).json({ error: err });
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  } finally {
+    client.release();
   }
 });
+
+router.post(
+  "/logout",
+  (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    req.session.destroy((err) => {
+      if (err) return next(err);
+      res.clearCookie("connect.sid");
+      res.status(200).json({ message: "Logged out successfully" });
+    });
+  }
+);
 
 router.post("/register", async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
